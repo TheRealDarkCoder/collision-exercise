@@ -17,7 +17,7 @@ CONFIG = {
     "interval_s": 1.0,
     "hr_range": (110, 170),      # bpm, synthetic
     "rr_range": (35, 65),        # breaths/min, synthetic
-    "hr_alarm_above": 165,
+    "hr_alarm_bpm": 170,
 }
 
 
@@ -28,16 +28,19 @@ def generate_reading():
     return {"hr": hr, "rr": rr}
 
 
-def check_alarm(reading):
-    """Return True if the reading should raise an alarm."""
-    if reading["hr"] > CONFIG["hr_alarm_above"]:
+def check_alarm(reading, prev_reading):
+    if prev_reading is None:
+        return False
+        
+    threshold = CONFIG["hr_alarm_bpm"]
+    if reading["hr"] > threshold and prev_reading["hr"] > threshold:
         return True
     return False
 
 
-def format_reading(reading, tick):
+def format_reading(reading, tick, prev_reading):
     """Render one reading as a single output line."""
-    alarm = "!" if check_alarm(reading) else " "
+    alarm = "!!" if check_alarm(reading,prev_reading) else " "
     line = "%s  #%04d  HR %3d  RR %2d" % (
         alarm,
         tick,
@@ -49,12 +52,15 @@ def format_reading(reading, tick):
 
 def main():
     print("neomon 0.1  |  patient %s  |  synthetic feed" % CONFIG["patient_id"])
+    print("alarm > %d bpm" % CONFIG["hr_alarm_bpm"])
     print("-" * 44)
     tick = 0
+    prev_reading = None
     while True:
         tick += 1
         reading = generate_reading()
-        print(format_reading(reading, tick))
+        print(format_reading(reading, tick, prev_reading))
+        prev_reading = reading
         time.sleep(CONFIG["interval_s"])
 
 
