@@ -18,6 +18,7 @@ CONFIG = {
     "hr_range": (110, 170),      # bpm, synthetic
     "rr_range": (35, 65),        # breaths/min, synthetic
     "hr_alarm_bpm": 170,
+    "spo2_range": (88, 100),     # %, synthetic
 }
 
 
@@ -25,13 +26,14 @@ def generate_reading():
     """Produce one synthetic reading."""
     hr = random.randint(*CONFIG["hr_range"])
     rr = random.randint(*CONFIG["rr_range"])
-    return {"hr": hr, "rr": rr}
+    spo2 = random.randint(*CONFIG["spo2_range"])
+    return {"hr": hr, "rr": rr, "spo2": spo2}
 
 
 def check_alarm(reading, prev_reading):
     if prev_reading is None:
         return False
-        
+
     threshold = CONFIG["hr_alarm_bpm"]
     if reading["hr"] > threshold and prev_reading["hr"] > threshold:
         return True
@@ -41,17 +43,18 @@ def check_alarm(reading, prev_reading):
 def format_reading(reading, tick, prev_reading):
     """Render one reading as a single output line."""
     alarm = "!!" if check_alarm(reading,prev_reading) else " "
-    line = "%s  #%04d  HR %3d  RR %2d" % (
+    line = "%s  #%04d  HR %3d  RR %2d SpO2 %3d%%" % (
         alarm,
         tick,
         reading["hr"],
         reading["rr"],
+        reading["spo2"],
     )
     return line
 
 
 def main():
-    print("neomon 0.1  |  patient %s  |  synthetic feed" % CONFIG["patient_id"])
+    print("neomon 0.1  |  patient %s  |  synthetic feed (HR/RR/SpO2)" % CONFIG["patient_id"])
     print("alarm > %d bpm" % CONFIG["hr_alarm_bpm"])
     print("-" * 44)
     tick = 0
