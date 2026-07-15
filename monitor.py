@@ -6,6 +6,7 @@ Run:  python monitor.py
 Stop: Ctrl+C
 """
 
+import argparse
 import random
 import time
 
@@ -54,6 +55,14 @@ def format_reading(reading, tick, prev_reading):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="neomon — tiny synthetic vitals feed for the masterclass.")
+    parser.add_argument("--patient", type=str, default=CONFIG["patient_id"], help="Patient ID")
+    parser.add_argument("--interval", type=float, default=CONFIG["interval_s"], help="Interval between readings in seconds")
+    args = parser.parse_args()
+
+    CONFIG["patient_id"] = args.patient
+    CONFIG["interval_s"] = args.interval
+
     print("neomon 0.1  |  patient %s  |  synthetic feed (HR/RR/SpO2)" % CONFIG["patient_id"])
     print("alarm > %d bpm" % CONFIG["hr_alarm_bpm"])
     print("-" * 44)
